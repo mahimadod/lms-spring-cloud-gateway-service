@@ -37,10 +37,11 @@ public class LoggingGatewayFilterFactory extends
         return ((exchange, chain) -> {
             // Pre-processing
             if (config.isPreLogger()) {
-                logger.info("Pre GatewayFilter logging: "
+                logger.info("Pre GatewayFilter logging - dinnniiii logging"
                         + config.getBaseMessage());
             }
             try{
+                logger.info("*******************");
             String x=exchange.getRequest().getHeaders().containsKey("token")? Objects.requireNonNull(exchange.getRequest().getHeaders().get("token")).get(0):"";
              if(!sendJWTTokenValidationRequest(x)) {
                 return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
@@ -75,14 +76,19 @@ public class LoggingGatewayFilterFactory extends
 
     private boolean sendJWTTokenValidationRequest(String token) {
         if(!token.isEmpty()){
+            logger.info("TOKEN NOT EMPTY");
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<AuthResponse> response=restTemplate.exchange("http://localhost:8091/auth-service/validate?token="+token, HttpMethod.GET,null, AuthResponse.class);
+            ResponseEntity<AuthResponse> response=restTemplate.exchange(""+token, HttpMethod.GET,null, AuthResponse.class);
             if(response.getStatusCode().is2xxSuccessful()){
+                logger.info("TOKEN SUCCESSFUL");
                 return Objects.requireNonNull(response.getBody()).isValidToken();
             }else {
+                logger.info("TOKEN NOT SUCCESSFUL");
+
                 return false;
             }
         }
+        logger.info("TOKEN OUT");
         return false;
     }
 
