@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -12,7 +13,6 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.*;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -28,6 +28,9 @@ public class LoggingGatewayFilterFactory extends
     final Logger logger =
       LoggerFactory.getLogger(LoggingGatewayFilterFactory.class);
 
+    @Autowired
+    private WebClientConfig webClient;
+
     public LoggingGatewayFilterFactory() {
         super(Config.class);
     }
@@ -37,26 +40,26 @@ public class LoggingGatewayFilterFactory extends
         return ((exchange, chain) -> {
             // Pre-processing
             if (config.isPreLogger()) {
-                logger.info("Pre GatewayFilter logging - dinnniiii logging"
+                logger.info("Pre GatewayFilter logging-"
                         + config.getBaseMessage());
             }
-            try{
-                logger.info("*******************");
-            String x=exchange.getRequest().getHeaders().containsKey("token")? Objects.requireNonNull(exchange.getRequest().getHeaders().get("token")).get(0):"";
-             if(!sendJWTTokenValidationRequest(x)) {
-                return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
-            }
-            }catch (Exception e){
-                return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
-            }
-                return chain.filter(exchange)
-                        .then(Mono.fromRunnable(() -> {
-                            // Post-processing
-                            if (config.isPostLogger()) {
-                                logger.info("Post GatewayFilter logging: "
-                                        + config.getBaseMessage());
-                            }
-                        }));
+
+            String token=exchange.getRequest().getHeaders().containsKey("token")? Objects.requireNonNull(exchange.getRequest().getHeaders().get("token")).get(0):"";
+            return sendJWTTokenValidationRequest(token)
+                    .flatMap(valid -> {
+                        if (!valid) {
+                            logger.warn("Token validation failed");
+                            return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
+                        }
+
+                        logger.info("Token validated successfully");
+                        return chain.filter(exchange)
+                                .then(Mono.fromRunnable(() -> {
+                                    if (config.isPostLogger()) {
+                                        logger.info("Post GatewayFilter logging: " + config.getBaseMessage());
+                                    }
+                                }));
+                    });
         });
     }
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {
@@ -74,22 +77,33 @@ public class LoggingGatewayFilterFactory extends
         return response.writeWith(Mono.just(buffer));
     }
 
-    private boolean sendJWTTokenValidationRequest(String token) {
-        if(!token.isEmpty()){
-            logger.info("TOKEN NOT EMPTY");
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<AuthResponse> response=restTemplate.exchange(""+token, HttpMethod.GET,null, AuthResponse.class);
-            if(response.getStatusCode().is2xxSuccessful()){
-                logger.info("TOKEN SUCCESSFUL");
-                return Objects.requireNonNull(response.getBody()).isValidToken();
-            }else {
-                logger.info("TOKEN NOT SUCCESSFUL");
-
-                return false;
-            }
+    private Mono<Boolean> sendJWTTokenValidationRequest(String token) {
+        if (token == null || token.isEmpty()) {
+            logger.warn("Token is missing or empty");
+            return Mono.just(false);
         }
-        logger.info("TOKEN OUT");
-        return false;
+
+        String uri = "/auth-service/validate?token=" + token;
+        logger.debug("Calling Auth Service: {}", uri);
+        try {
+            return webClient.webClient().get()
+                    .uri(uri)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, response -> {
+                        logger.warn("Received error status from Auth Service: {}", response.statusCode());
+                        return Mono.error(new RuntimeException("Invalid response from Auth Service"));
+                    })
+                    .bodyToMono(AuthResponse.class)
+                    .doOnNext(authResponse -> logger.debug("Auth Response: {}", authResponse))
+                    .map(AuthResponse::isValidToken)
+                    .onErrorResume(e -> {
+                        logger.error("Error calling Auth Service", e);
+                        return Mono.just(false);
+                    });
+        }catch(Exception e){
+            logger.error("Exception occurred while sending JWT token validation request", e);
+            return Mono.just(false);
+        }
     }
 
     public static class Config {

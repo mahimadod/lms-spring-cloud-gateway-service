@@ -36,14 +36,14 @@ public class AuthGatewayFilterFactory extends
         return ((exchange, chain) -> {
             // Pre-processing
             if (config.isPreLogger()) {
-                logger.info("Pre GatewayFilter logging: "
+                logger.info("Pre GatewayFilter Auth: "
                         + config.getBaseMessage());
             }
                 return chain.filter(exchange)
                         .then(Mono.fromRunnable(() -> {
                             // Post-processing
                             if (config.isPostLogger()) {
-                                logger.info("Post GatewayFilter logging: "
+                                logger.info("Post GatewayFilter Auth: "
                                         + config.getBaseMessage());
                             }
                         }));

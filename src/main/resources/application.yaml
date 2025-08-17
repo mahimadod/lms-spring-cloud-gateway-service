@@ -2,12 +2,12 @@ server:
   port: 8085
 spring:
   application:
-    name: API-GATEWAY-SERVICE
+    name: LMS-SPRING-CLOUD-GATEWAY-SERVICE
   cloud:
     gateway:
       routes:
         - id: BOOK-SERVICE
-          uri: http://localhost:8081
+          uri: http://book-service:8081
           predicates:
             - Path=/book-service/**
           filters:
@@ -19,7 +19,7 @@ spring:
                 postLogger: true
 
         - id: LOAN-SERVICE
-          uri: http://localhost:8083
+          uri: http://loan-service:8083
           predicates:
             - Path=/loan-service/**
           filters:
@@ -31,7 +31,7 @@ spring:
                 postLogger: true
 
         - id: RESERVATION-SERVICE
-          uri: http://localhost:8084
+          uri: http://reservation-service:8084
           predicates:
             - Path=/reservation-service/**
           filters:
@@ -43,7 +43,7 @@ spring:
                 postLogger: true
 
         - id: AUTHENTICATOR-SERVICE
-          uri: http://localhost:8091
+          uri: http://authenticator-service:8091
           predicates:
             - Path=/auth-service/**
           filters:
@@ -55,7 +55,7 @@ spring:
                 postLogger: true
 
         - id: MEMBER-SERVICE
-          uri: http://localhost:8082
+          uri: http://member-service:8082
           predicates:
             - Path=/member-service/**
           filters:
@@ -67,7 +67,7 @@ spring:
                 postLogger: true
 
         - id: NOTIFICATION-SERVICE
-          uri: http://localhost:8087
+          uri: http://notification-service:8087
           predicates:
             - Path=/notification-service/**
           filters:
@@ -81,4 +81,5 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone : http://localhost:8761/eureka/
+      defaultZone : http://discovery-service:8761/eureka/
+#      defaultZone : http://localhost:8761/eureka/
