@@ -12,7 +12,7 @@ public class WebClientConfig {
     @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl("http://authenticator-service:8091") // Change if needed
+                .baseUrl("http://spring-cloud-gateway-service:8085") // Change if needed
                 .build();
     }
 }
