@@ -1,4 +1,3 @@
-/*
 package com.example.gateway.service;
 
 import org.junit.jupiter.api.Test;
@@ -12,4 +11,3 @@ class ApplicationTests {
 	}
 
 }
-*/
