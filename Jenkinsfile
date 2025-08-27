@@ -2,47 +2,62 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'mahimadod/lms-spring-cloude-gateway-service'
-        IMAGE_TAG = 'latest'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_IMAGE = "mahimadod/lms-spring-cloud-gateway-service"
+        JAVA_HOME = tool name: 'JDK17', type: 'jdk'
+        MAVEN_HOME = tool name: 'Maven3.9.9', type: 'maven'
     }
 
     stages {
+        stage('Clean Workspace') {
+                    steps {
+                        deleteDir()
+                    }
+                }
+
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/mahimadod/lms-discovery-service.git'
+                git branch: 'master', url: 'https://github.com/mahimadod/lms-spring-cloud-gateway-service.git'
             }
         }
-
-        stage('Build JAR') {
-                    steps {
-                        sh 'mvn clean package'
-                    }
-        }
-
-        stage('Build Docker Image') {
+        stage('Build & Test') {
             steps {
-                script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                // Properly inject JAVA_HOME and MAVEN_HOME into the shell PATH
+                withEnv([
+                    "JAVA_HOME=${env.JAVA_HOME}",
+                    "MAVEN_HOME=${env.MAVEN_HOME}",
+                    "PATH=${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:$PATH"
+                ]) {
+                    sh 'mvn clean install'
+                }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Docker Build & Push') {
             steps {
                 script {
-                    docker.withRegistry('', 'dockerhub-creds') {
-                        dockerImage.push()
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        def customImage = docker.build("${DOCKER_IMAGE}:${env.BUILD_NUMBER}")
+                        customImage.push()
+                        customImage.tag('latest')
+                        customImage.push('latest')
                     }
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy') {
             steps {
+                echo 'Deploying Docker container...'
                 sh '''
-                docker-compose down
-                docker-compose pull
-                docker-compose up -d --build
+                    docker rm -f lms-spring-cloud-gateway || true
+                    docker run -d --name lms-spring-cloud-gateway -p 8085:8085 ${DOCKER_IMAGE}:${BUILD_NUMBER}
                 '''
             }
         }
