@@ -29,11 +29,14 @@ public class LoggingGatewayFilterFactory extends
       LoggerFactory.getLogger(LoggingGatewayFilterFactory.class);
 
     @Autowired
-    @Qualifier("getAuthenticatorWebClient")
-    private WebClient authWebClient;
+    private WebClientConfig webClient;
 
-    public LoggingGatewayFilterFactory() {
+
+    private final WebClient.Builder webClientBuilder;
+
+    public LoggingGatewayFilterFactory(WebClient.Builder webClientBuilder) {
         super(Config.class);
+        this.webClientBuilder = webClientBuilder;
     }
 
     @Override
@@ -84,11 +87,12 @@ public class LoggingGatewayFilterFactory extends
             return Mono.just(false);
         }
 
-        String uri = "/validate?token=" + token;
+        String uri = "/auth-service/validate?token=" + token;
         logger.debug("Calling Auth Service: {}", uri);
         try {
-            return authWebClient.get()
-                    .uri("/validate?token=" + token)
+            return webClientBuilder.build()
+                    .get()
+                    .uri("lb://authenticator-service/auth-service/validate?token=" + token)
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, response -> {
                         logger.warn("Received error status from Auth Service: {}", response.statusCode());
