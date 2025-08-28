@@ -10,7 +10,7 @@ public class WebClientConfig {
 
     @Bean
     @LoadBalanced
-    public WebClient webClient() {
+    public WebClient getAuthenticatorWebClient() {
         return WebClient.builder()
                 .baseUrl("http://LMS-AUTHENTICATOR-SERVICE") // Change if needed
                 .build();
