@@ -6,7 +6,7 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: BOOK-SERVICE
+        - id: LMS-BOOK-SERVICE
           uri: http://book-service:8081
           predicates:
             - Path=/book-service/**
@@ -18,7 +18,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: LOAN-SERVICE
+        - id: LMS-LOAN-SERVICE
           uri: http://loan-service:8083
           predicates:
             - Path=/loan-service/**
@@ -30,7 +30,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: RESERVATION-SERVICE
+        - id: LMS-RESERVATION-SERVICE
           uri: http://reservation-service:8084
           predicates:
             - Path=/reservation-service/**
@@ -42,7 +42,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: AUTHENTICATOR-SERVICE
+        - id: LMS-AUTHENTICATOR-SERVICE
           uri: http://authenticator-service:8091
           predicates:
             - Path=/auth-service/**
@@ -54,7 +54,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: MEMBER-SERVICE
+        - id: LMS-MEMBER-SERVICE
           uri: http://member-service:8082
           predicates:
             - Path=/member-service/**
@@ -66,7 +66,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: NOTIFICATION-SERVICE
+        - id: LMS-NOTIFICATION-SERVICE
           uri: http://notification-service:8087
           predicates:
             - Path=/notification-service/**

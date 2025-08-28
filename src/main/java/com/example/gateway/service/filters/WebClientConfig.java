@@ -12,7 +12,7 @@ public class WebClientConfig {
     @LoadBalanced
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl("http://LMS-SPRING-CLOUD-GATEWAY-SERVICE") // Change if needed
+                .baseUrl("http://LMS-AUTHENTICATOR-SERVICE") // Change if needed
                 .build();
     }
 }
