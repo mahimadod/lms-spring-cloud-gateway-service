@@ -55,12 +55,12 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: MEMBER-SERVICE
-          uri: http://member-service:8082
+        - id: memeber-service
+          uri: lb://member-service
           predicates:
             - Path=/member-service/**
           filters:
-            - RewritePath=/service(?<segment>/?.*), $\{segment}
+            - RewritePath=/member-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
                 baseMessage: My Custom Message
