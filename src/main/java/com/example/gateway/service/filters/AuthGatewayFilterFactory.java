@@ -49,33 +49,6 @@ public class AuthGatewayFilterFactory extends
                         }));
         });
     }
-    private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(status);
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
-        String body = String.format(
-                "{\"error\":\"%s\",\"message\":\"%s\",\"status\":%d,\"timestamp\":\"%s\"}",
-                status.getReasonPhrase(), message, status.value(), Instant.now().toString()
-        );
-
-        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = response.bufferFactory().wrap(bytes);
-        return response.writeWith(Mono.just(buffer));
-    }
-
-    private boolean sendJWTTokenValidationRequest(String token) {
-        if(!token.isEmpty()){
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<AuthResponse> response=restTemplate.exchange("http://localhost:8091/auth-service/validate?token="+token, HttpMethod.GET,null, AuthResponse.class);
-            if(response.getStatusCode().is2xxSuccessful()){
-                return Objects.requireNonNull(response.getBody()).isValidToken();
-            }else {
-                return false;
-            }
-        }
-        return false;
-    }
 
     public static class Config {
         private String baseMessage;

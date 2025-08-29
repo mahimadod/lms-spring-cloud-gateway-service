@@ -18,12 +18,12 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: LOAN-SERVICE
-          uri: http://loan-service:8083
+        - id: loan-service
+          uri: lb://loan-service
           predicates:
             - Path=/loan-service/**
           filters:
-            - RewritePath=/service(?<segment>/?.*), $\{segment}
+            - RewritePath=/loan-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
                 baseMessage: My Custom Message
