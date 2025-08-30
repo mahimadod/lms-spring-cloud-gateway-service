@@ -30,12 +30,12 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: RESERVATION-SERVICE
-          uri: http://reservation-service:8084
+        - id: reservation-service
+          uri: lb://reservation-service
           predicates:
             - Path=/reservation-service/**
           filters:
-            - RewritePath=/service(?<segment>/?.*), $\{segment}
+            - RewritePath=/reservation-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
                 baseMessage: My Custom Message
@@ -67,12 +67,12 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: NOTIFICATION-SERVICE
-          uri: http://notification-service:8087
+        - id: notification-service
+          uri: lb://notification-service
           predicates:
             - Path=/notification-service/**
           filters:
-            - RewritePath=/service(?<segment>/?.*), $\{segment}
+            - RewritePath=/notification-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
                 baseMessage: My Custom Message
