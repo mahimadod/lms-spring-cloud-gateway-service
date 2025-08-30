@@ -55,7 +55,7 @@ spring:
                 preLogger: true
                 postLogger: true
 
-        - id: memeber-service
+        - id: member-service
           uri: lb://member-service
           predicates:
             - Path=/member-service/**
