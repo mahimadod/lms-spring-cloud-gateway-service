@@ -57,7 +57,7 @@ pipeline {
                 echo 'Deploying Docker container...'
                 sh '''
                     docker rm -f lms-spring-cloud-gateway || true
-                    docker run -d --name lms-spring-cloud-gateway -p 8085:8085 ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                    docker run -d --name lms-spring-cloud-gateway --network lms-network -p 8085:8085 ${DOCKER_IMAGE}:${BUILD_NUMBER}
                 '''
             }
         }
