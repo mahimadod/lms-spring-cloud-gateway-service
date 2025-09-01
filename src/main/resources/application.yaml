@@ -14,7 +14,7 @@ spring:
             - RewritePath=/book-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for book service
                 preLogger: true
                 postLogger: true
 
@@ -26,7 +26,7 @@ spring:
             - RewritePath=/loan-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for loan service
                 preLogger: true
                 postLogger: true
 
@@ -38,7 +38,7 @@ spring:
             - RewritePath=/reservation-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for reservation service
                 preLogger: true
                 postLogger: true
 
@@ -51,7 +51,7 @@ spring:
 
             - name: Auth
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for auth service
                 preLogger: true
                 postLogger: true
 
@@ -63,7 +63,7 @@ spring:
             - RewritePath=/member-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for member service
                 preLogger: true
                 postLogger: true
 
@@ -75,7 +75,7 @@ spring:
             - RewritePath=/notification-service/(?<segment>.*), /${segment}
             - name: Logging
               args:
-                baseMessage: My Custom Message
+                baseMessage: My Custom Message for notification service
                 preLogger: true
                 postLogger: true
 
