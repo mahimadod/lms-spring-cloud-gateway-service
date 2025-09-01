@@ -90,9 +90,9 @@ public class LoggingGatewayFilterFactory extends
         String uri = "/auth-service/validate?token=" + token;
         logger.debug("Calling Auth Service: {}", uri);
         try {
-            return webClientBuilder.build()
+            return webClientBuilder.baseUrl("lb://spring-cloud-gateway-service/").build()
                     .get()
-                    .uri("lb://authenticator-service/auth-service/validate?token=" + token)
+                    .uri("auth-service/validate?token=" + token)
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, response -> {
                         logger.warn("Received error status from Auth Service: {}", response.statusCode());
