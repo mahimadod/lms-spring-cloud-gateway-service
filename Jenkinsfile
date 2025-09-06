@@ -8,6 +8,10 @@ pipeline {
         MAVEN_HOME = tool name: 'Maven3.9.9', type: 'maven'
     }
 
+    tools {
+        maven 'Maven3.9.9'
+    }
+
     stages {
         stage('Clean Workspace') {
                     steps {
@@ -21,23 +25,29 @@ pipeline {
             }
         }
         stage('Build & Test') {
-            steps {
-                // Properly inject JAVA_HOME and MAVEN_HOME into the shell PATH
-                withEnv([
-                    "JAVA_HOME=${env.JAVA_HOME}",
-                    "MAVEN_HOME=${env.MAVEN_HOME}",
-                    "PATH=${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:$PATH"
-                ]) {
-                    sh 'mvn clean install'
+                    steps {
+                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                            configFileProvider([configFile(fileId: 'github-settings', variable: 'MAVEN_SETTINGS')]) {
+                                withEnv([
+                                    "JAVA_HOME=${env.JAVA_HOME}",
+                                    "MAVEN_HOME=${env.MAVEN_HOME}",
+                                    "PATH=${env.JAVA_HOME}\\bin;${env.MAVEN_HOME}\\bin;%PATH%" // ✅ CHANGED FOR WINDOWS
+                                ]) {
+                                    // ❌ Old (for Unix): sh 'mvn clean install --settings $MAVEN_SETTINGS'
+                                    // ✅ NEW (for Windows):
+                                    bat 'mvn clean install --settings %MAVEN_SETTINGS%'
+                                }
+                            }
+                        }
+                    }
+                    post {
+                        always {
+                            // ✅ MAKE SURE THIS PATTERN MATCHES YOUR FILES!
+                            junit '**/target/surefire-reports/*.xml'
+                            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                        }
+                    }
                 }
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-                }
-            }
-        }
 
         stage('Docker Build & Push') {
             steps {
@@ -55,10 +65,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying Docker container...'
-                sh '''
-                    docker rm -f lms-spring-cloud-gateway || true
+                bat """
+                    docker rm -f lms-spring-cloud-gateway || exit 0
                     docker run -d --name lms-spring-cloud-gateway --network lms-network -p 8085:8085 ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                '''
+                """
             }
         }
     }
