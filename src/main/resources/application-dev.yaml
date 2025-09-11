@@ -1,0 +1,86 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: spring-cloud-gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: book-service
+          uri: lb://book-service
+          predicates:
+            - Path=/book-service/**
+          filters:
+            - RewritePath=/book-service/(?<segment>.*), /${segment}
+            - name: Logging
+              args:
+                baseMessage: My Custom Message for book service
+                preLogger: true
+                postLogger: true
+
+        - id: loan-service
+          uri: lb://loan-service
+          predicates:
+            - Path=/loan-service/**
+          filters:
+            - RewritePath=/loan-service/(?<segment>.*), /${segment}
+            - name: Logging
+              args:
+                baseMessage: My Custom Message for loan service
+                preLogger: true
+                postLogger: true
+
+        - id: reservation-service
+          uri: lb://reservation-service
+          predicates:
+            - Path=/reservation-service/**
+          filters:
+            - RewritePath=/reservation-service/(?<segment>.*), /${segment}
+            - name: Logging
+              args:
+                baseMessage: My Custom Message for reservation service
+                preLogger: true
+                postLogger: true
+
+        - id: authenticator-service
+          uri: lb://authenticator-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - RewritePath=/auth-service/(?<segment>.*), /${segment}
+
+            - name: Auth
+              args:
+                baseMessage: My Custom Message for auth service
+                preLogger: true
+                postLogger: true
+
+        - id: member-service
+          uri: lb://member-service
+          predicates:
+            - Path=/member-service/**
+          filters:
+            - RewritePath=/member-service/(?<segment>.*), /${segment}
+            - name: Logging
+              args:
+                baseMessage: My Custom Message for member service
+                preLogger: true
+                postLogger: true
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - RewritePath=/notification-service/(?<segment>.*), /${segment}
+            - name: Logging
+              args:
+                baseMessage: My Custom Message for notification service
+                preLogger: true
+                postLogger: true
+
+eureka:
+  client:
+    service-url:
+#      defaultZone : http://localhost:8761/eureka/
+      defaultZone: http://host.docker.internal:8761/eureka/
