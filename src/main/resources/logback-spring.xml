@@ -12,7 +12,6 @@
                 <stackTrace />
                 <context />
                 <mdc />
-                <customFields>{"service":"spring-cloud-gateway-service"}</customFields>
             </providers>
         </encoder>
     </appender>
